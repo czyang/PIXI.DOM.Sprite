@@ -1,7 +1,15 @@
 PIXI.DOM.Sprite
 ===============
+Fork Note:  
+This fork supported PIXI v3.0.6. Use as your own risk.  
+After PIXI v3.x DisplayObject don't have a "stage" variable inside, and every DisplayObject can be used as "stage" node.  
+How to use:  
 
-
+```javascript
+var stage = new PIXI.Container(0xc3c3c3);
+PIXI.DOM.Setup( renderer, true, false, stage); 
+```
+--------
 PIXI.DOM v.0.1.0
 
 PIXI.DOM is a pixi.js plugin, created to allow you to render DOM elements on top of your pixi stage.
