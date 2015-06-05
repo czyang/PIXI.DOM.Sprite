@@ -45,6 +45,7 @@
 	var _domContainer = null;
 	var _renderer = null;
 	var _debugMode = null;
+    var _rootContainer = null;
 
 	var _dummyElement = document.createElement('span');
 	var _hasComputedStyle = !!window.getComputedStyle;
@@ -101,7 +102,7 @@
 	var generateFakeTexture = function(w, h) {
 		return {
 			baseTexture: { hasLoaded: true },
-			frame: { width: w, height: h }
+			_frame: { width: w, height: h }
 		};
 	};
 
@@ -133,7 +134,7 @@
 		ctx.stroke();
 		ctx.closePath();
 
-		// create texture		
+		// create texture
 		return PIXI.Texture.fromCanvas(can);
 	};
 
@@ -144,7 +145,7 @@
 		if( typeof tag !== 'string' ) {
 			return tag;
 		}
-		
+
 		// jquery like id selector
 		if( tag.charAt(0) === '#' ) {
 			return document.getElementById( tag.slice(1) );
@@ -162,11 +163,11 @@
 
 	/* pixi.js doesn't render / touch children of hidden sprites at all, so we have to go all the way up to find out if we are invisible or not */
 	var invisbilityCheck = function(displayObject) {
-		return !displayObject.visible || displayObject.alpha <= 0 || (displayObject.stage !== displayObject && (!displayObject.parent || invisbilityCheck(displayObject.parent)));
+        return !displayObject.visible || displayObject.alpha <= 0 || (_rootContainer !== displayObject && (!displayObject.parent || invisbilityCheck(displayObject.parent)));
 	};
 
 	//
-	DOM.Setup = function( renderer, isDomContainer, debugMode ) {
+	DOM.Setup = function( renderer, isDomContainer, debugMode, rootContainer) {
 		_renderer = renderer;
 		_debugMode = !!debugMode;
 		if( (isDomContainer === undefined || isDomContainer) && renderer.view.parentNode ) {
@@ -184,20 +185,25 @@
 				wrapper.style.width = renderer.view.width + 'px';
 				wrapper.style.height = renderer.view.height + 'px';
 			};
-			
+
 			// attach view to wrapper
 			renderer.view.parentNode.appendChild( wrapper );
 			renderer.view.parentNode.removeChild( renderer.view );
 			wrapper.appendChild( renderer.view );
-			
+
 			this.setDomContainer( wrapper );
+            this.setRootContainer( rootContainer );
 		}
 	};
 
-	// 
+	//
 	DOM.setDomContainer = function( container ) {
 		_domContainer = container;
 	};
+
+    DOM.setRootContainer = function( container ) {
+        _rootContainer = container;
+    }
 
 	//
 	DOM.Sprite = function( tag, opts ) {
@@ -344,7 +350,7 @@
             this.children[i]._renderCanvas(renderSession);
         }
 	};
-	
+
 	/* webgl rendering */
 	DOM.Sprite.prototype._oldRenderWebGL = DOM.Sprite.prototype._renderWebGL;
 	DOM.Sprite.prototype._renderWebGL = function(renderSession) {
